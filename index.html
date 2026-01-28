@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Grid Dominion</title>
+<style>
+  canvas { background:#111; display:block; margin:auto; }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="600" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const SIZE = 10;
+const CELL = 60;
+const EMPTY = 0, PLAYER = 1, AI = -1;
+
+let board = Array.from({length: SIZE}, () => Array(SIZE).fill(EMPTY));
+let turn = PLAYER;
+
+function draw() {
+  ctx.clearRect(0,0,600,600);
+  for (let y=0;y<SIZE;y++) {
+    for (let x=0;x<SIZE;x++) {
+      ctx.strokeStyle = "#333";
+      ctx.strokeRect(x*CELL, y*CELL, CELL, CELL);
+      if (board[y][x] === PLAYER) {
+        ctx.fillStyle = "#4af";
+        ctx.fillRect(x*CELL+5,y*CELL+5,CELL-10,CELL-10);
+      }
+      if (board[y][x] === AI) {
+        ctx.fillStyle = "#f44";
+        ctx.fillRect(x*CELL+5,y*CELL+5,CELL-10,CELL-10);
+      }
+    }
+  }
+}
+
+function score(b) {
+  let s = 0;
+  for (let row of b)
+    for (let c of row) s += c;
+  return s;
+}
+
+function clone(b) {
+  return b.map(r => r.slice());
+}
+
+function possibleMoves(b) {
+  let moves = [];
+  for (let y=0;y<SIZE;y++)
+    for (let x=0;x<SIZE;x++)
+      if (b[y][x] === EMPTY)
+        moves.push({x,y});
+  return moves;
+}
+
+// --- AI (minimax depth 2 + heuristic) ---
+function aiMove() {
+  let best = -Infinity;
+  let move = null;
+
+  for (let m of possibleMoves(board)) {
+    let b = clone(board);
+    b[m.y][m.x] = AI;
+
+    let worst = Infinity;
+    for (let p of possibleMoves(b)) {
+      let b2 = clone(b);
+      b2[p.y][p.x] = PLAYER;
+      worst = Math.min(worst, score(b2));
+    }
+
+    if (worst > best) {
+      best = worst;
+      move = m;
+    }
+  }
+
+  if (move) board[move.y][move.x] = AI;
+  turn = PLAYER;
+  draw();
+}
+
+canvas.addEventListener("click", e => {
+  if (turn !== PLAYER) return;
+  let x = Math.floor(e.offsetX / CELL);
+  let y = Math.floor(e.offsetY / CELL);
+  if (board[y][x] !== EMPTY) return;
+
+  board[y][x] = PLAYER;
+  turn = AI;
+  draw();
+  setTimeout(aiMove, 300);
+});
+
+draw();
+</script>
+</body>
+</html>
