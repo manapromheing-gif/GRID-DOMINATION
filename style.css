@@ -1,0 +1,20 @@
+body {
+  background: #0f0f0f;
+  color: #eee;
+  text-align: center;
+  font-family: monospace;
+}
+
+canvas {
+  border: 2px solid #444;
+  margin: 20px auto;
+  display: block;
+}
+
+button {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
